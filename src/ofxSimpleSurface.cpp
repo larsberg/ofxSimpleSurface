@@ -27,12 +27,7 @@ ofxSimpleSurface::~ofxSimpleSurface()
 
 ofVec3f ofxSimpleSurface::pointOnSurface( float u, float v)
 {
-	vector<ofVec3f>& uHullCV = uHull.getControlVertices();
-	
-	for (int i=0; i<uHullCV.size(); i++) {
-		uHullCV[i] = uSplines[i].getPoint(v);
-	}
-	
+	getUHull( v );
 	return  uHull.getPoint( u );
 }
 
@@ -204,10 +199,14 @@ void ofxSimpleSurface::drawSplines()
 ofVboMesh& ofxSimpleSurface::getMesh(){	return mesh; }
 
 ofxSimpleSpline* ofxSimpleSurface::getUHull(float v)
-{	vector<ofVec3f>& uHullCV = uHull.getControlVertices();
-	
-	for (int i=0; i<uHullCV.size(); i++) {
-		uHullCV[i] = uSplines[i].getPoint(v);
+{
+	if(uHullPos != v)
+	{
+		uHullPos = v;
+		vector<ofVec3f>& uHullCV = uHull.getControlVertices();
+		for (int i=0; i<uHullCV.size(); i++) {
+			uHullCV[i] = uSplines[i].getPoint(v);
+		}
 	}
 	
 	return  &uHull;

@@ -55,6 +55,7 @@ public:
 	
 	vector<ofxSimpleSpline> uSplines;
 	ofxSimpleSpline uHull;
+	float uHullPos;
 	
 	
 	//mesh
