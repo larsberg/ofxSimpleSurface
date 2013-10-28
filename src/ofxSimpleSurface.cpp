@@ -125,7 +125,7 @@ void ofxSimpleSurface::setup( int _subdU, int _subdV)
 	}
 	
 	//normal arrays
-	faceNormals.res`ize( indices.size() / 3 );
+	faceNormals.resize( indices.size() / 3 );
 	vertexNormals.resize( vertices.size() );
 	
 	//build our mesh
@@ -189,8 +189,7 @@ void ofxSimpleSurface::update()
 
 void ofxSimpleSurface::draw()
 {
-//	mesh.draw();
-	mesh.drawWireframe();
+	mesh.draw();
 }
 
 void ofxSimpleSurface::drawSplines()
