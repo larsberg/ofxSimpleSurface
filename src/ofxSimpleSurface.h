@@ -38,7 +38,7 @@ public:
 	
 	void updateNormals();
 	
-	void update();
+	void update( bool bUpdateNormals=true);
 	
 	ofxSimpleSpline* getUHull(float v);
 	
@@ -47,6 +47,29 @@ public:
 	void draw();
 	
 	void drawSplines();
+	
+	void flipNormals()
+	{
+		vector<ofIndexType>& indices = mesh.getIndices();
+		
+		int swapper;
+		for(int i=0; i<indices.size(); i+=3)
+		{
+			swapper = indices[i+1];
+			mesh.setIndex(i+1, indices[i+2]);
+			mesh.setIndex(i+2, swapper);
+		};
+	}
+	
+	bool getFaceted()
+	{
+		return bFaceted;
+	}
+	
+	void setFaceted( bool faceted )
+	{
+		bFaceted = faceted;
+	}
 	
 	
 	//private:
@@ -57,17 +80,16 @@ public:
 	ofxSimpleSpline uHull;
 	float uHullPos;
 	
+	bool bFaceted;
+	
 	
 	//mesh
 	int subdU, subdV, numU, numV;
 	float stepU, stepV;
-	ofVboMesh mesh;
+	ofVboMesh mesh, facetedMesh;
 	
-	vector<ofIndexType> indices;
 	vector<ofVec3f> vertices, faceNormals, vertexNormals;
 	vector<ofVec2f> texCoords;
 	
 	int numUControlVertices, numVControlVertices;
-	
-	
 };

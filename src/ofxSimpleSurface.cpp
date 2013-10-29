@@ -17,6 +17,8 @@ ofxSimpleSurface::ofxSimpleSurface()
 	
 	subdU = 3;
 	subdV = 3;
+	
+	bFaceted = false;
 };
 ofxSimpleSurface::~ofxSimpleSurface()
 {
@@ -103,8 +105,9 @@ void ofxSimpleSurface::setup( int _subdU, int _subdV)
 		}
 	}
 	
-	//indices
-	indices.clear();
+	//indices	
+	vector<ofIndexType> indices;
+
 	for(int i=0; i<numU-1; i++)
 	{
 		for(int j=0; j<numV-1; j++)
@@ -143,30 +146,62 @@ void ofxSimpleSurface::updateNormals()
 	ofVec3f fn;
 	vector<ofVec3f>& v = mesh.getVertices();
 	vector<ofVec3f>& n = mesh.getNormals();
+	vector<ofVec2f>& tc = mesh.getTexCoords();
+	vector<ofIndexType>& indices = mesh.getIndices();
 	
 	fill (vertexNormals.begin(),vertexNormals.end(), ofVec3f(0,0,0));
 	
 	int fIndex = 0;
+	if(bFaceted)
+	{
+		facetedMesh.getVertices().resize(indices.size());
+		facetedMesh.getNormals().resize(indices.size());
+		facetedMesh.getTexCoords().resize(indices.size());
+		facetedMesh.getIndices().resize(indices.size());
+	}
+
 	for(int i=0; i<indices.size(); i+=3)
 	{
 		fn = normalFrom3Points( v[indices[i]], v[indices[i+1]], v[indices[i+2]]);
 		faceNormals[fIndex] = fn;
 		fIndex++;
 		
-		vertexNormals[indices[i]] += fn;
-		vertexNormals[indices[i+1]] += fn;
-		vertexNormals[indices[i+2]] += fn;
+		if(bFaceted)
+		{
+			facetedMesh.setIndex(i, i);
+			facetedMesh.setIndex(i+1, i+1);
+			facetedMesh.setIndex(i+2, i+2);
+			
+			facetedMesh.setVertex(i, v[indices[i]]);
+			facetedMesh.setVertex(i+1, v[indices[i+1]]);
+			facetedMesh.setVertex(i+2, v[indices[i+2]]);
+			
+			facetedMesh.setTexCoord(i, tc[indices[i]]);
+			facetedMesh.setTexCoord(i+1, tc[indices[i+1]]);
+			facetedMesh.setTexCoord(i+2, tc[indices[i+2]]);
+			
+			facetedMesh.setNormal(i, fn);
+			facetedMesh.setNormal(i+1, fn);
+			facetedMesh.setNormal(i+2, fn);
+		}
+		else{
+			vertexNormals[indices[i]] += fn;
+			vertexNormals[indices[i+1]] += fn;
+			vertexNormals[indices[i+2]] += fn;
+		}
 	}
 	
-	for(int i=0; i<vertexNormals.size(); i++)
+	if(!bFaceted)
 	{
-		vertexNormals[i].normalize();
-		mesh.setNormal(i, vertexNormals[i] );
+		for(int i=0; i<vertexNormals.size(); i++)
+		{
+			vertexNormals[i].normalize();
+			mesh.setNormal(i, vertexNormals[i] );
+		}
 	}
-	
 }
 
-void ofxSimpleSurface::update()
+void ofxSimpleSurface::update(bool bUpdateNormals)
 {
 	//vertex positions
 	for (int i=0; i<numV; i++)
@@ -179,12 +214,19 @@ void ofxSimpleSurface::update()
 	}
 	
 	//normals
-	updateNormals();
+	if(bUpdateNormals)	updateNormals();
 }
 
 void ofxSimpleSurface::draw()
 {
-	mesh.draw();
+	if(bFaceted)
+	{
+		facetedMesh.draw();
+	}
+	else
+	{
+		mesh.draw();
+	}
 }
 
 void ofxSimpleSurface::drawSplines()
@@ -196,7 +238,11 @@ void ofxSimpleSurface::drawSplines()
 	}
 }
 
-ofVboMesh& ofxSimpleSurface::getMesh(){	return mesh; }
+ofVboMesh& ofxSimpleSurface::getMesh()
+{
+	
+	return bFaceted ? facetedMesh : mesh;
+}
 
 ofxSimpleSpline* ofxSimpleSurface::getUHull(float v)
 {
