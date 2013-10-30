@@ -71,6 +71,14 @@ public:
 		bFaceted = faceted;
 	}
 	
+	void setClosed( bool close_u,bool close_v )
+	{
+		uHull.close( close_u );
+		bClosedU = close_u;
+		
+		//TODO: handle close_v
+	}
+	
 	
 	//private:
 	vector < vector< ofVec3f > >* controlVertices;
@@ -80,7 +88,7 @@ public:
 	ofxSimpleSpline uHull;
 	float uHullPos;
 	
-	bool bFaceted;
+	bool bFaceted, bClosedU;
 	
 	
 	//mesh

@@ -19,6 +19,7 @@ ofxSimpleSurface::ofxSimpleSurface()
 	subdV = 3;
 	
 	bFaceted = false;
+	bClosedU = false;
 };
 ofxSimpleSurface::~ofxSimpleSurface()
 {
@@ -193,6 +194,16 @@ void ofxSimpleSurface::updateNormals()
 	
 	if(!bFaceted)
 	{
+		if(bClosedU)
+		{
+			ofVec3f n;
+			for(int j=0; j<numV; j++)
+			{
+				n = vertexNormals[j] + vertexNormals[numV*(numU-1)+j];
+				vertexNormals[j] = n;
+				vertexNormals[numV*(numU-1)+j] = n;
+			}
+		}
 		for(int i=0; i<vertexNormals.size(); i++)
 		{
 			vertexNormals[i].normalize();
