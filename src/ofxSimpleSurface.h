@@ -31,6 +31,12 @@ public:
 	}
 	
 	ofVec3f pointOnSurface( float u, float v);
+	ofVec3f getSurfaceNormal( float u, float v);
+	ofVec3f pointOnSurface( ofVec2f uv){	return pointOnSurface(uv.x, uv.y);}
+	ofVec3f getSurfaceNormal( ofVec2f uv){	return getSurfaceNormal(uv.x, uv.y);}
+	
+	ofVec4f getMeshFace(float u, float v);
+	void getMeshPositionAndNormal( ofVec3f& pos, ofVec3f& norm, float _u, float _v);
 	
 	void setup( int _subdU=3, int _subdV=3);
 	

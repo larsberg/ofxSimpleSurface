@@ -25,6 +25,8 @@ ofxSimpleSurface::~ofxSimpleSurface()
 {
 	clearCV();
 	mesh.clear();
+	facetedMesh.clear();
+	
 };
 
 
@@ -32,6 +34,69 @@ ofVec3f ofxSimpleSurface::pointOnSurface( float u, float v)
 {
 	getUHull( v );
 	return  uHull.getPoint( u );
+}
+
+ofVec3f ofxSimpleSurface::getSurfaceNormal( float u, float v)
+{	
+	ofVec3f p0 = pointOnSurface(u,v);
+	ofVec3f p1 = pointOnSurface(u,v + .005);
+	ofVec3f p2 = pointOnSurface(u + .005,v);
+	
+	return normalFrom3Points(p0, p2, p1);
+}
+
+ofVec4f ofxSimpleSurface::getMeshFace(float u, float v)
+{
+	int i = floor(ofMap(u, 0, 1, 0, numU));
+	int j = floor(ofMap(v, 0, 1, 0, numV));
+	
+	return  ofVec4f( numV*i+j, numV*i+j+1, numV*(i+1)+j+1, numV*(i+1)+j );
+}
+
+void ofxSimpleSurface::getMeshPositionAndNormal( ofVec3f& pos, ofVec3f& norm, float u, float v)
+{
+	ofVec4f fi = getMeshFace( u, v );
+	
+	u = ofMap( u, 0, 1, 0, numU);
+	v = ofMap( v, 0, 1, 0, numV);
+	
+	u -= floor(u);
+	v -= floor(v);
+	
+	float mu = 1. - u;
+	float mv = 1. - v;
+	
+	//ofVec3f p0 = mesh.getVertex( fi.x );
+	//ofVec3f p1 = mesh.getVertex( fi.y );
+	//ofVec3f p2 = mesh.getVertex( fi.z );
+	//ofVec3f p3 = mesh.getVertex( fi.w );
+	//
+	////basically a 2D linear lattice
+	//pos = (mu * p0 + u * p3) * mv + (mu * p1 + u * p2) * v;
+	
+	pos = (mu * mesh.getVertex(fi.x) + u * mesh.getVertex(fi.w)) * mv + (mu * mesh.getVertex(fi.y) + u * mesh.getVertex(fi.z)) * v;
+	
+	if(!bFaceted)
+	{
+		//ofVec3f n0 = ;
+		//ofVec3f n1 = mesh.getNormal( fi.y );
+		//ofVec3f n2 = mesh.getNormal( fi.z );
+		//ofVec3f n3 = mesh.getNormal( fi.w );
+		//norm = ((mu * n0 + u * n3) * mv + (mu * n1 + u * n2) * v).normalize();
+		
+		norm = ((mu * mesh.getNormal(fi.x) + u * mesh.getNormal(fi.w)) * mv + (mu * mesh.getNormal(fi.y) + u * mesh.getNormal(fi.z)) * v).normalize();
+	}
+	else
+	{
+		//just guessing here...
+		if(u*u + v+v < 1.41421356237 )// ~= square root of two..
+		{
+			norm = normalFrom3Points(mesh.getVertex( fi.x ), mesh.getVertex( fi.z ), mesh.getVertex( fi.y ));
+		}else{
+			norm = normalFrom3Points(mesh.getVertex( fi.x ), mesh.getVertex( fi.w ), mesh.getVertex( fi.z ));
+		}
+	}
+	
 }
 
 void ofxSimpleSurface::setControlVertices( vector< vector<ofVec3f> >& _cv )
@@ -124,7 +189,7 @@ void ofxSimpleSurface::setup( int _subdU, int _subdV)
 	}
 	
 	//normal arrays
-	faceNormals.resize( indices.size() / 3 );
+//	faceNormals.resize( indices.size() / 3 );
 	vertexNormals.resize( vertices.size() );
 	
 	//build our mesh
@@ -164,7 +229,7 @@ void ofxSimpleSurface::updateNormals()
 	for(int i=0; i<indices.size(); i+=3)
 	{
 		fn = normalFrom3Points( v[indices[i]], v[indices[i+1]], v[indices[i+2]]);
-		faceNormals[fIndex] = fn;
+//		faceNormals[fIndex] = fn;
 		fIndex++;
 		
 		if(bFaceted)
@@ -185,7 +250,8 @@ void ofxSimpleSurface::updateNormals()
 			facetedMesh.setNormal(i+1, fn);
 			facetedMesh.setNormal(i+2, fn);
 		}
-		else{
+		else
+		{
 			vertexNormals[indices[i]] += fn;
 			vertexNormals[indices[i+1]] += fn;
 			vertexNormals[indices[i+2]] += fn;
@@ -230,14 +296,7 @@ void ofxSimpleSurface::update(bool bUpdateNormals)
 
 void ofxSimpleSurface::draw()
 {
-	if(bFaceted)
-	{
-		facetedMesh.draw();
-	}
-	else
-	{
-		mesh.draw();
-	}
+	bFaceted? facetedMesh.draw() : mesh.draw();
 }
 
 void ofxSimpleSurface::drawSplines()
