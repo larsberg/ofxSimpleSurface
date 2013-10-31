@@ -189,7 +189,6 @@ void ofxSimpleSurface::setup( int _subdU, int _subdV)
 	}
 	
 	//normal arrays
-//	faceNormals.resize( indices.size() / 3 );
 	vertexNormals.resize( vertices.size() );
 	
 	//build our mesh
@@ -223,21 +222,15 @@ void ofxSimpleSurface::updateNormals()
 		facetedMesh.getVertices().resize(indices.size());
 		facetedMesh.getNormals().resize(indices.size());
 		facetedMesh.getTexCoords().resize(indices.size());
-		facetedMesh.getIndices().resize(indices.size());
 	}
 
 	for(int i=0; i<indices.size(); i+=3)
 	{
 		fn = normalFrom3Points( v[indices[i]], v[indices[i+1]], v[indices[i+2]]);
-//		faceNormals[fIndex] = fn;
 		fIndex++;
 		
 		if(bFaceted)
-		{
-			facetedMesh.setIndex(i, i);
-			facetedMesh.setIndex(i+1, i+1);
-			facetedMesh.setIndex(i+2, i+2);
-			
+		{	
 			facetedMesh.setVertex(i, v[indices[i]]);
 			facetedMesh.setVertex(i+1, v[indices[i+1]]);
 			facetedMesh.setVertex(i+2, v[indices[i+2]]);
