@@ -32,8 +32,8 @@ ofxSimpleSurface::~ofxSimpleSurface()
 
 ofVec3f ofxSimpleSurface::pointOnSurface( float u, float v)
 {
-	getUHull( v );
-	return  uHull.getPoint( u );
+	getUHull( v - floor(v) );
+	return  uHull.getPoint( u - floor(u) );
 }
 
 ofVec3f ofxSimpleSurface::getSurfaceNormal( float u, float v)
@@ -47,19 +47,53 @@ ofVec3f ofxSimpleSurface::getSurfaceNormal( float u, float v)
 
 ofVec4f ofxSimpleSurface::getMeshFace(float u, float v)
 {
-	int i = floor(ofMap(u, 0, 1, 0, numU));
-	int j = floor(ofMap(v, 0, 1, 0, numV));
+	int i = ofMap(u - floor(u), 0, 1, 0, numU);
+	int j = ofMap(v - floor(v), 0, 1, 0, numV);
 	
-	return  ofVec4f( numV*i+j, numV*i+j+1, numV*(i+1)+j+1, numV*(i+1)+j );
+	i %= numU;
+	j %= numU;
+	
+	int i1 = (i + 1) % (numU);
+	int j1 = (j + 1) % (numV);
+	
+	ofVec4f fi;//( numV*i+j, numV*i+j+1, numV*(i+1)+j+1, numV*(i+1)+j );
+	fi.x = numV * i + j;
+	fi.y = numV * i + j1;
+	
+	fi.z = numV * i1 + j1;
+	fi.w = numV * i1 + j;
+	
+	return  fi;
+}
+
+void ofxSimpleSurface::getSurfacePositionAndNormal( ofVec3f& pos, ofVec3f& norm, float _u, float _v )
+{
+	_u -= floor(_u);
+	_v -= floor(_v);
+	
+	float _u1 = _u + .01;
+	float _v1 = _v + .01;
+	
+	_u1 -= floor(_u1);
+	_v1 -= floor(_v1);
+	
+	getUHull( _v );
+	pos = uHull.getPoint( _u );
+	
+	ofVec3f p0 = pos;
+	ofVec3f p1 = uHull.getPoint( _u1 );
+	ofVec3f p2 = pointOnSurface(_u, _v1 );
+		
+	norm = normalFrom3Points(p0, p1, p2);
 }
 
 void ofxSimpleSurface::getMeshPositionAndNormal( ofVec3f& pos, ofVec3f& norm, float u, float v)
 {
 	ofVec4f fi = getMeshFace( u, v );
 	
+	//get face percentage
 	u = ofMap( u, 0, 1, 0, numU);
 	v = ofMap( v, 0, 1, 0, numV);
-	
 	u -= floor(u);
 	v -= floor(v);
 	
