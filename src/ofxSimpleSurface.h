@@ -21,6 +21,11 @@ public:
 	void setupUSplines();
 	
 	void setControlVertices( vector< vector<ofVec3f> >& _cv );
+	vector< vector<ofVec3f> >* getControlVertices()
+	{
+		return controlVertices;
+	}
+	
 	
 	void addControlVertices( vector< vector<ofVec3f> >& _cv );
 	
@@ -52,6 +57,7 @@ public:
 	ofVboMesh& getMesh();
 	
 	void draw();
+	void drawWireframe();
 	
 	void drawSplines();
 	

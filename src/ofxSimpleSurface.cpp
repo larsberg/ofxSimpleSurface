@@ -326,6 +326,11 @@ void ofxSimpleSurface::draw()
 	bFaceted? facetedMesh.draw() : mesh.draw();
 }
 
+void ofxSimpleSurface::drawWireframe()
+{
+	bFaceted? facetedMesh.drawWireframe() : mesh.drawWireframe();
+}
+
 void ofxSimpleSurface::drawSplines()
 {
 	for(int i=0; i<uSplines.size(); i++)
